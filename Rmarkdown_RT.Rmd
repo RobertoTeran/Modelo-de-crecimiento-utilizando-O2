@@ -1,0 +1,61 @@
+---
+title: "Crecimiento segun O2"
+output: html_document
+date: '2022-05-10'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(gapminder)
+library(ggplot2)
+library(psych)
+library(readxl)
+library(readr)
+library(ggplot2)
+library(dplyr)
+```
+
+
+
+## Exploracion de datos ambientales y crecimiento en centro de cultivo de la XI region, sector Huaitecas.
+
+```{r,resumenn RT}
+summary(RT)
+
+```
+
+
+
+
+
+## Including Plots
+Para data revisada se realizay se busca la mejor correlacion entre las variables
+
+
+```{r RT, echo=FALSE}
+pairs.panels(RT[,2:4], method = "pearson", hist.col = "magenta",  density = TRUE, font=2)
+corPlot(RT, cex = 1.2, main = "Matriz de correlaci?n")
+```
+
+#buscamos relacion grafica
+
+
+```{r RT, echo=FALSE}
+ggplot(RT, aes(x=sgr, y=o2)) + 
+  geom_point() + theme_light()
+
+```
+
+#obtendremos las estimaciones de los parametros estadisticos
+
+
+```{r RT}
+
+mod1 <- lm(sgr ~ o2, data=RT)
+mod1 # Para imprimir el objeto mod1
+```
+
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
