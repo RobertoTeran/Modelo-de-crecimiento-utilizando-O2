@@ -16,46 +16,143 @@ library(dplyr)
 ```
 
 
-
 ## Exploracion de datos ambientales y crecimiento en centro de cultivo de la XI region, sector Huaitecas.
 
 ```{r,resumenn RT}
-summary(RT)
+rt <- read_excel("/cloud/project/RT.xlsx")
+summary(rt)
 
+```
+```{r RT9, echo=FALSE}
+hist(x = RT$sgr, main = "Histograma SGR", 
+     xlab = "SGR", ylab = "Frecuencia",
+     col = "magenta")
+
+
+hist(x = RT$o2, main = "Histograma O2", 
+     xlab = "O2", ylab = "Frecuencia",
+     col = "cyan")
+
+hist(x = RT$temp, main = "Histograma T°", 
+     xlab = "T°", ylab = "Frecuencia",
+     col = "blue")
 ```
 
 
 
 
 
-## Including Plots
-Para data revisada se realizay se busca la mejor correlacion entre las variables
+## Graficas incluidas##
+Para data revisada se realiza y se busca la mejor correlacion entre las variables
 
 
-```{r RT, echo=FALSE}
-pairs.panels(RT[,2:4], method = "pearson", hist.col = "magenta",  density = TRUE, font=2)
-corPlot(RT, cex = 1.2, main = "Matriz de correlaci?n")
+```{r RT, echo=TRUE}
+pairs.panels(rt[,2:4], method = "pearson", hist.col = "magenta",  density = TRUE, font=2)
+corPlot(rt, cex = 1.2, main = "Matriz de correlaci?n")
 ```
 
-#buscamos relacion grafica
+##buscamos relacion grafica##
 
 
-```{r RT, echo=FALSE}
+```{r RT1, echo=TRUE}
+
 ggplot(RT, aes(x=sgr, y=o2)) + 
+  geom_point() + theme_light()
+
+ggplot(RT, aes(x=sem, y=o2)) + 
+  geom_point() + theme_light()
+
+ggplot(RT, aes(x=sgr, y=temp)) + 
   geom_point() + theme_light()
 
 ```
 
-#obtendremos las estimaciones de los parametros estadisticos
+##obtendremos las estimaciones de los parametros estadisticos##
 
 
-```{r RT}
+```{r RT2}
+mod1 <- lm(sgr ~ o2, data=rt)
+mod1
+```
 
-mod1 <- lm(sgr ~ o2, data=RT)
-mod1 # Para imprimir el objeto mod1
+
+En la salida anterior se observan los valores estimados de  ??0 y  ??1
+pero no aparece la estimacion de  ??
+Para obtener una tabla de resumen con detalles del modelo ajustado,
+se usa la funcion generica summary
+
+```{r RT3}
+summary(mod1)
+
+```
+
+
+Para incluir la recta de regresion que representa el modelo ajustado anterior...
+
+```{r RT4}
+ggplot(rt, aes(x=sgr, y=o2)) + 
+  geom_point() +
+  geom_smooth(method='lm', formula=y~x, se=FALSE, col='dodgerblue1') +
+  theme_light()
+
+ggplot(rt, aes(x=sem, y=o2)) + 
+  geom_point() +
+  geom_smooth(method='lm', formula=y~x, se=FALSE, col='dodgerblue1') +
+  theme_light()
+
+ggplot(rt, aes(x=sem, y=temp)) + 
+  geom_point() +
+  geom_smooth(method='lm', formula=y~x, se=FALSE, col='dodgerblue1') +
+  theme_light()
+```
+
+la regresion lineal no se ajusta de buena manera a la nube  de datos
+
+utilizaremos regresion multiple
+
+```{r RT5}
+library(scatterplot3d)
+attach(rt)
+scatterplot3d(x=temp, y=o2, z=sgr, pch=16, cex.lab=1,
+              highlight.3d=TRUE, type="h", xlab='Temp (C?)',
+              ylab='O2 (mg/l)', zlab='SGR')
+
+```
+
+a medida que aumenta la temperatura, aumenta el SGR y en condiciones de mayor o2
+
+```{r RT6}
+library(plotly)
+plot_ly(x=temp, y=o2, z=sgr, type="scatter3d", color=sgr) %>% 
+  layout(scene = list(xaxis = list(title = 'Temp (C?)'),
+                      yaxis = list(title = 'o2 (mg/l)'),
+                      zaxis = list(title = 'SGR')))
+
+```
+
+#basandonos en el modelo 3d, la expresion que se ajusta es:
+
+```{r RT7}
+mod <- lm(sgr ~ o2 + temp, data=rt)
+summary(mod)
+
+
+```
+
+
+Para incluir el plano de regresion que representa el modelo ajustado anterior 
+
+ Se crea el grafico 3d y se guarda en un objeto, por ejemplo mi_3d
+ 
+```{r RT8}
+mi_3d <- scatterplot3d(x=temp, y=o2, z=sgr, pch=16, cex.lab=1,
+                       highlight.3d=TRUE, type="h", xlab='Temp (C?)',
+                       ylab='O2 (mg/l)', zlab='SGR')
+
+mi_3d$plane3d(mod, lty.box = "solid", col='mediumblue')
 ```
 
 
 
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+

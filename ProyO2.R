@@ -8,7 +8,7 @@ library(readr)
 library(ggplot2)
 library(dplyr)
 
-
+class(RT)
 choose.files()
 RT <- read_excel("RT.xlsx")
 as.data.frame(RT)
@@ -65,7 +65,7 @@ ggplot(RT, aes(x=sgr, y=o2)) +
 
 #obtendremos las estimaciones de los parametros estadisticos##
 
-mod1 <- lm(sgr ~ o2, data=RT)
+mod1 <- lm(sgr ~ o2, data=rt)
 mod1 # Para imprimir el objeto mod1
 
 #En la salida anterior se observan los valores estimados de  ??0 y  ??1
@@ -124,3 +124,54 @@ mi_3d <- scatterplot3d(x=temp, y=o2, z=sgr, pch=16, cex.lab=1,
 
 # -Para agregar el plano usamos $plane3d( ) con argumento modelo ajustado
 mi_3d$plane3d(mod, lty.box="solid", col='mediumblue')
+
+
+
+## CORRELACION SPEARMAn
+
+library(readxl)
+head(RT)
+summary(RT)
+cor.test(RT$sgr, RT$o2, 
+         metthod= "sspearman")
+
+
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  geom_smooth()
+
+
+
+ggplot(mpg, aes(o2, sgr)) +
+  geom_point() +
+  geom_smooth(orientation = "y")
+
+geom_smooth(RT)
+stat_smooth(rt)
+stat_smooth(rt)
+
+lm(RT)
+glm(RT)
+loess(RT)
+
+ggplot(mpg, aes(o2, sgr)) +
+  geom_point() +
+  geom_smooth(orientation = "y")
+library(ggplot2)
+
+
+# install.packages("ggplot2")
+library(ggplot2)
+
+# Datos
+set.seed(rt)
+df <- data.frame(x = rnorm(100),
+                 y = rnorm(100))
+
+ggplot(df, aes(x = x, y = y)) +
+  geom_point() +
+  geom_curve(x = -2, y = 1,
+             xend = 1, yend = -1,
+             color = 4) 
+
+
