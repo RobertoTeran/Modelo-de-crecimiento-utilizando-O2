@@ -23,20 +23,15 @@ rt <- read_excel("/cloud/project/RT.xlsx")
 summary(rt)
 
 ```
-```{r RT9, echo=FALSE}
-hist(x = rt$sgr, main = "Histograma SGR", 
-     xlab = "SGR", ylab = "Frecuencia",
-     col = "magenta")
 
+##Limpieza de datos. Permite comprobar si hay NA en el marco de datos.
 
-hist(x = rt$o2, main = "Histograma O2", 
-     xlab = "O2", ylab = "Frecuencia",
-     col = "cyan")
-
-hist(x = rt$temp, main = "Histograma T°", 
-     xlab = "T°", ylab = "Frecuencia",
-     col = "blue")
+```{r mapdata,ECHO= FALSE,  out.width = ´70%´, fig.align=´center}
+missmap(rt ,col=c('white','black'),y.at=1,y.labels='',legend=TRUE)
 ```
+
+se puede apreciar que no hay falta de datos
+
 
 
 
@@ -160,7 +155,15 @@ mi_3d <- scatterplot3d(x=temp, y=o2, z=sgr, pch=16, cex.lab=1,
 mi_3d$plane3d(mod, lty.box = "solid", col='mediumblue')
 ```
 
-
+```{r}
+library(ggplot2)
+ggplot(rt, aes(x=sgr, y=o2))+
+    geom_point() +
+    geom_line(aes(y=sgr), color="red", linetype="dashed") +
+    geom_line(aes(y=o2), color="red", linetype="dashed") +
+    geom_smooth(method=lm, formula=y~x, se=TRUE, level=0.95, col='blue', fill='pink2') +
+    theme_light()
+```
 
 
 
