@@ -24,16 +24,16 @@ summary(rt)
 
 ```
 ```{r RT9, echo=FALSE}
-hist(x = RT$sgr, main = "Histograma SGR", 
+hist(x = rt$sgr, main = "Histograma SGR", 
      xlab = "SGR", ylab = "Frecuencia",
      col = "magenta")
 
 
-hist(x = RT$o2, main = "Histograma O2", 
+hist(x = rt$o2, main = "Histograma O2", 
      xlab = "O2", ylab = "Frecuencia",
      col = "cyan")
 
-hist(x = RT$temp, main = "Histograma T°", 
+hist(x = rt$temp, main = "Histograma T°", 
      xlab = "T°", ylab = "Frecuencia",
      col = "blue")
 ```
@@ -47,22 +47,30 @@ Para data revisada se realiza y se busca la mejor correlacion entre las variable
 
 
 ```{r RT, echo=TRUE}
-pairs.panels(rt[,2:4], method = "pearson", hist.col = "magenta",  density = TRUE, font=2)
-corPlot(rt, cex = 1.2, main = "Matriz de correlaci?n")
+pairs.panels(rt[,2:4], method = "pearson", hist.col = "magenta",  density = FALSE, font=2)
+corPlot(rt , cex = 1.2 , main = "Matriz de correlación")
 ```
+
+##al obtener una correlacion mas baja mediante Pearson intentaremos mediante Spearman##
+
+
+
+```{r}
+correlation <- cor(rt$sgr, rt$o2, method = 'spearman')
+```
+obtuvimos una correlacion de 0.649
 
 ##buscamos relacion grafica##
 
-
 ```{r RT1, echo=TRUE}
 
-ggplot(RT, aes(x=sgr, y=o2)) + 
+ggplot(rt, aes(x=sgr, y=o2)) + 
   geom_point() + theme_light()
 
-ggplot(RT, aes(x=sem, y=o2)) + 
+ggplot(rt, aes(x=sem, y=o2)) + 
   geom_point() + theme_light()
 
-ggplot(RT, aes(x=sgr, y=temp)) + 
+ggplot(rt, aes(x=sgr, y=temp)) + 
   geom_point() + theme_light()
 
 ```
