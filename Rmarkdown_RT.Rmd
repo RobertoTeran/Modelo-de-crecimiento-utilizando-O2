@@ -1,8 +1,21 @@
 ---
-title: "Crecimiento segun O2"
-output: html_document
-date: '2022-05-10'
+title: "Tarea final Diplomado"
+author: "Alain Muñoz Faúndez"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  slidy_presentation: default
+  ioslides_presentation: default
+  beamer_presentation:
+    theme: Warsaw
+    colortheme: lily
+    fonttheme: professionalfonts
+    includes:
+      in_header: mystyle.tex
+  urlcolor: blue
+subtitle: Diplomado en Análisis de datos con R para la Acuicultura.
+institute: Pontificia Universidad Católica de Valparaíso
 ---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -13,18 +26,32 @@ library(readxl)
 library(readr)
 library(ggplot2)
 library(dplyr)
+library(reshape2)
 ```
+
+
+## INTRODUCCIÓN
+
+Tradicionalmente la acuicultura vieen trabajando con modelos de crecimiento que solo incorporan una variable que es mas o menos conocida y que por calentamiento goblar viene en aumento en los ultimos años, pero siempre hubo una variable que hizo ruido pero que no estaba siendo incluida en el modelo de crecimiento, esta variable es el oxigeno disuelto, el cual afecta importantemente los porcesos productivos de engorda de salmones castigando los crecimientos si es que este parametro se mantenia en bajos rangos incluso generando mortalidades asociadas cuando es muy baja su concentracion.
+a continuacion trataremos de confirmar la estrecah relacion que existe entre el sgr y el o2.
+
+```{r,echo=FALSE, out.width = '70%', fig.align='center'}
+
+ 
+```
+
+
 
 
 ## Exploracion de datos ambientales y crecimiento en centro de cultivo de la XI region, sector Huaitecas.
 
-```{r,resumenn RT}
+```{r echo=FALSE, out.width = '70%', fig.align='center'}
 rt <- read_excel("/cloud/project/RT.xlsx")
 summary(rt)
 
 ```
 
-##Limpieza de datos. Permite comprobar si hay NA en el marco de datos.
+##Limpieza de datos. Permite comprobar si hay perdida de datos en el marco de datos.
 
 ```{r mapdata,ECHO= FALSE,  out.width = ´70%´, fig.align=´center}
 missmap(rt ,col=c('white','black'),y.at=1,y.labels='',legend=TRUE)
@@ -41,16 +68,16 @@ se puede apreciar que no hay falta de datos
 Para data revisada se realiza y se busca la mejor correlacion entre las variables
 
 
-```{r RT, echo=TRUE}
-pairs.panels(rt[,2:4], method = "pearson", hist.col = "magenta",  density = FALSE, font=2)
-corPlot(rt , cex = 1.2 , main = "Matriz de correlación")
+```{r echo=FALSE, out.width = '70%', fig.align='center'}
+pairs.panels(rt[,2:4], method = "pearson", hist.col = "magenta",  density = FALSE, font=1)
+corPlot(rt , cex = 1 , main = "Matriz de correlación")
 ```
 
 ##al obtener una correlacion mas baja mediante Pearson intentaremos mediante Spearman##
 
 
 
-```{r}
+```{r echo=FALSE, out.width = '70%', fig.align='center'}
 correlation <- cor(rt$sgr, rt$o2, method = 'spearman')
 ```
 obtuvimos una correlacion de 0.649
@@ -70,10 +97,33 @@ ggplot(rt, aes(x=sgr, y=temp)) +
 
 ```
 
+Aun no puede darse una respuesta clara de cual podria ser la mejor correlacion
+
+
+
+##Muestre el efecto de las variables independientes con respecto a la variable dependiente.
+
+```{r echo=FALSE, out.width = '70%', fig.align='center'}
+rt %>%
+  select(c(sgr,o2,temp)) %>%
+  melt(id.vars = "sgr" ) %>%
+  ggplot(aes(x = value, y = sgr, colour = variable)) +
+  geom_point(alpha = 0.7) +
+  stat_smooth(aes(colour = " ")) +
+  facet_wrap(~variable, scales = "free", ncol = 2) +
+  labs(x = "Variable Value", y = "sgr") +
+  theme_minimal()
+```
+
+La variable Sgr por lo que se puede ver es que depende claramente de O2 y temperatura .
+
+
+
 ##obtendremos las estimaciones de los parametros estadisticos##
 
 
-```{r RT2}
+
+```{r echo=FALSE, out.width = '70%', fig.align='center'}
 mod1 <- lm(sgr ~ o2, data=rt)
 mod1
 ```
@@ -84,7 +134,7 @@ pero no aparece la estimacion de  ??
 Para obtener una tabla de resumen con detalles del modelo ajustado,
 se usa la funcion generica summary
 
-```{r RT3}
+```{r echo=FALSE, out.width = '70%', fig.align='center'}
 summary(mod1)
 
 ```
@@ -92,7 +142,7 @@ summary(mod1)
 
 Para incluir la recta de regresion que representa el modelo ajustado anterior...
 
-```{r RT4}
+```{r echo=FALSE, out.width = '70%', fig.align='center'}
 ggplot(rt, aes(x=sgr, y=o2)) + 
   geom_point() +
   geom_smooth(method='lm', formula=y~x, se=FALSE, col='dodgerblue1') +
@@ -113,7 +163,7 @@ la regresion lineal no se ajusta de buena manera a la nube  de datos
 
 utilizaremos regresion multiple
 
-```{r RT5}
+```{r echo=FALSE, out.width = '70%', fig.align='center'}
 library(scatterplot3d)
 attach(rt)
 scatterplot3d(x=temp, y=o2, z=sgr, pch=16, cex.lab=1,
@@ -124,7 +174,7 @@ scatterplot3d(x=temp, y=o2, z=sgr, pch=16, cex.lab=1,
 
 a medida que aumenta la temperatura, aumenta el SGR y en condiciones de mayor o2
 
-```{r RT6}
+```{r echo=FALSE, out.width = '70%', fig.align='center'}
 library(plotly)
 plot_ly(x=temp, y=o2, z=sgr, type="scatter3d", color=sgr) %>% 
   layout(scene = list(xaxis = list(title = 'Temp (C?)'),
@@ -133,9 +183,15 @@ plot_ly(x=temp, y=o2, z=sgr, type="scatter3d", color=sgr) %>%
 
 ```
 
+
+la grafica anterior confirma los aprecia anteriormente, el color mas claro muestra los puntos mas optimos.
+
+
+
+
 #basandonos en el modelo 3d, la expresion que se ajusta es:
 
-```{r RT7}
+```{r, echo=FALSE, out.width = '70%', fig.align='center'}
 mod <- lm(sgr ~ o2 + temp, data=rt)
 summary(mod)
 
@@ -147,7 +203,7 @@ Para incluir el plano de regresion que representa el modelo ajustado anterior
 
  Se crea el grafico 3d y se guarda en un objeto, por ejemplo mi_3d
  
-```{r RT8}
+```{r echo=FALSE, out.width = '70%', fig.align='center'}
 mi_3d <- scatterplot3d(x=temp, y=o2, z=sgr, pch=16, cex.lab=1,
                        highlight.3d=TRUE, type="h", xlab='Temp (C?)',
                        ylab='O2 (mg/l)', zlab='SGR')
@@ -155,7 +211,10 @@ mi_3d <- scatterplot3d(x=temp, y=o2, z=sgr, pch=16, cex.lab=1,
 mi_3d$plane3d(mod, lty.box = "solid", col='mediumblue')
 ```
 
-```{r}
+
+
+podemos ver que en la grafica 3D la regresion se ajusta de mejor manera los a ambas variables una dependeiente de la otra.
+```{r echo=FALSE, out.width = '70%', fig.align='center'}
 library(ggplot2)
 ggplot(rt, aes(x=sgr, y=o2))+
     geom_point() +
@@ -164,6 +223,16 @@ ggplot(rt, aes(x=sgr, y=o2))+
     geom_smooth(method=lm, formula=y~x, se=TRUE, level=0.95, col='blue', fill='pink2') +
     theme_light()
 ```
+haca ya llevamos a un plano la regresion mostrando la mejosr concordancia entre el O2 y el Sgr.
+
+
+## Prueba Paramtrica
+
+Ho: la variable respuesta es la misma en todas las poblaciones valoradas
+
+Ha: la variable respuesta es mayor en alguna de las poblaciones
+
+Cuando no se cumplen las hipotesis exigidas por el modelo ANOVA, es posible utilizar la prueba no paramÃ©trica Kruskal-Wallis: Â¿hay diferencias significativas entre las poblaciones?
 
 
 
