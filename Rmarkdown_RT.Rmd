@@ -1,10 +1,11 @@
 ---
 title: "Tarea final Diplomado"
-author: "Alain Muñoz Faúndez"
+author: "Roberto Teran"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
   slidy_presentation: default
-  ioslides_presentation: default
+  html_document:
+    df_print: paged
   beamer_presentation:
     theme: Warsaw
     colortheme: lily
@@ -12,6 +13,7 @@ output:
     includes:
       in_header: mystyle.tex
   urlcolor: blue
+  ioslides_presentation: default
 subtitle: Diplomado en Análisis de datos con R para la Acuicultura.
 institute: Pontificia Universidad Católica de Valparaíso
 ---
@@ -27,6 +29,7 @@ library(readr)
 library(ggplot2)
 library(dplyr)
 library(reshape2)
+library(Amelia)
 ```
 
 
@@ -35,17 +38,10 @@ library(reshape2)
 Tradicionalmente la acuicultura vieen trabajando con modelos de crecimiento que solo incorporan una variable que es mas o menos conocida y que por calentamiento goblar viene en aumento en los ultimos años, pero siempre hubo una variable que hizo ruido pero que no estaba siendo incluida en el modelo de crecimiento, esta variable es el oxigeno disuelto, el cual afecta importantemente los porcesos productivos de engorda de salmones castigando los crecimientos si es que este parametro se mantenia en bajos rangos incluso generando mortalidades asociadas cuando es muy baja su concentracion.
 a continuacion trataremos de confirmar la estrecah relacion que existe entre el sgr y el o2.
 
-```{r,echo=FALSE, out.width = '70%', fig.align='center'}
-
- 
-```
-
-
-
 
 ## Exploracion de datos ambientales y crecimiento en centro de cultivo de la XI region, sector Huaitecas.
 
-```{r echo=FALSE, out.width = '70%', fig.align='center'}
+```{r ,echo=FALSE, out.width = '70%', fig.align='center'}
 rt <- read_excel("/cloud/project/RT.xlsx")
 summary(rt)
 
@@ -53,7 +49,7 @@ summary(rt)
 
 ##Limpieza de datos. Permite comprobar si hay perdida de datos en el marco de datos.
 
-```{r mapdata,ECHO= FALSE,  out.width = ´70%´, fig.align=´center}
+```{r }
 missmap(rt ,col=c('white','black'),y.at=1,y.labels='',legend=TRUE)
 ```
 
@@ -68,23 +64,23 @@ se puede apreciar que no hay falta de datos
 Para data revisada se realiza y se busca la mejor correlacion entre las variables
 
 
-```{r echo=FALSE, out.width = '70%', fig.align='center'}
+```{r }
 pairs.panels(rt[,2:4], method = "pearson", hist.col = "magenta",  density = FALSE, font=1)
-corPlot(rt , cex = 1 , main = "Matriz de correlación")
+corPlot(rt , cex = 0.5, main = "Matriz de correlación")
 ```
 
-##al obtener una correlacion mas baja mediante Pearson intentaremos mediante Spearman##
+al obtener una correlacion mas baja mediante Pearson intentaremos mediante Spearman
 
 
 
-```{r echo=FALSE, out.width = '70%', fig.align='center'}
+```{r ,echo=FALSE, out.width = '70%', fig.align='center'}
 correlation <- cor(rt$sgr, rt$o2, method = 'spearman')
 ```
 obtuvimos una correlacion de 0.649
 
-##buscamos relacion grafica##
+Buscamos relacion grafica
 
-```{r RT1, echo=TRUE}
+```{r, RT1, echo=TRUE}
 
 ggplot(rt, aes(x=sgr, y=o2)) + 
   geom_point() + theme_light()
@@ -103,7 +99,7 @@ Aun no puede darse una respuesta clara de cual podria ser la mejor correlacion
 
 ##Muestre el efecto de las variables independientes con respecto a la variable dependiente.
 
-```{r echo=FALSE, out.width = '70%', fig.align='center'}
+```{r ,echo=FALSE, out.width = '70%', fig.align='center'}
 rt %>%
   select(c(sgr,o2,temp)) %>%
   melt(id.vars = "sgr" ) %>%
@@ -123,7 +119,7 @@ La variable Sgr por lo que se puede ver es que depende claramente de O2 y temper
 
 
 
-```{r echo=FALSE, out.width = '70%', fig.align='center'}
+```{r, echo=FALSE, out.width = '70%', fig.align='center'}
 mod1 <- lm(sgr ~ o2, data=rt)
 mod1
 ```
@@ -134,7 +130,7 @@ pero no aparece la estimacion de  ??
 Para obtener una tabla de resumen con detalles del modelo ajustado,
 se usa la funcion generica summary
 
-```{r echo=FALSE, out.width = '70%', fig.align='center'}
+```{r, echo=FALSE, out.width = '70%', fig.align='center'}
 summary(mod1)
 
 ```
@@ -142,7 +138,7 @@ summary(mod1)
 
 Para incluir la recta de regresion que representa el modelo ajustado anterior...
 
-```{r echo=FALSE, out.width = '70%', fig.align='center'}
+```{r, echo=FALSE, out.width = '70%', fig.align='center'}
 ggplot(rt, aes(x=sgr, y=o2)) + 
   geom_point() +
   geom_smooth(method='lm', formula=y~x, se=FALSE, col='dodgerblue1') +
@@ -163,7 +159,7 @@ la regresion lineal no se ajusta de buena manera a la nube  de datos
 
 utilizaremos regresion multiple
 
-```{r echo=FALSE, out.width = '70%', fig.align='center'}
+```{r, echo=FALSE, out.width = '70%', fig.align='center'}
 library(scatterplot3d)
 attach(rt)
 scatterplot3d(x=temp, y=o2, z=sgr, pch=16, cex.lab=1,
@@ -174,7 +170,7 @@ scatterplot3d(x=temp, y=o2, z=sgr, pch=16, cex.lab=1,
 
 a medida que aumenta la temperatura, aumenta el SGR y en condiciones de mayor o2
 
-```{r echo=FALSE, out.width = '70%', fig.align='center'}
+```{r ,echo=FALSE, out.width = '70%', fig.align='center'}
 library(plotly)
 plot_ly(x=temp, y=o2, z=sgr, type="scatter3d", color=sgr) %>% 
   layout(scene = list(xaxis = list(title = 'Temp (C?)'),
@@ -203,7 +199,7 @@ Para incluir el plano de regresion que representa el modelo ajustado anterior
 
  Se crea el grafico 3d y se guarda en un objeto, por ejemplo mi_3d
  
-```{r echo=FALSE, out.width = '70%', fig.align='center'}
+```{r ,echo=FALSE, out.width = '70%', fig.align='center'}
 mi_3d <- scatterplot3d(x=temp, y=o2, z=sgr, pch=16, cex.lab=1,
                        highlight.3d=TRUE, type="h", xlab='Temp (C?)',
                        ylab='O2 (mg/l)', zlab='SGR')
@@ -214,7 +210,7 @@ mi_3d$plane3d(mod, lty.box = "solid", col='mediumblue')
 
 
 podemos ver que en la grafica 3D la regresion se ajusta de mejor manera los a ambas variables una dependeiente de la otra.
-```{r echo=FALSE, out.width = '70%', fig.align='center'}
+```{r ,echo=FALSE, out.width = '70%', fig.align='center'}
 library(ggplot2)
 ggplot(rt, aes(x=sgr, y=o2))+
     geom_point() +
