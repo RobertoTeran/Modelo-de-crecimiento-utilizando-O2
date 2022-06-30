@@ -1,0 +1,364 @@
+---
+title: "Tarea final Diplomado"
+author: "Roberto Teran"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  html_document:
+    df_print: paged
+  slidy_presentation: default
+  ioslides_presentation: default
+  urlcolor: blue
+  pdf_document: default
+  beamer_presentation:
+    theme: Warsaw
+    colortheme: lily
+    fonttheme: professionalfonts
+    includes:
+      in_header: mystyle.tex
+subtitle: Diplomado en Análisis de datos con R para la Acuicultura.
+institute: Pontificia Universidad Católica de Valparaíso
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(gapminder)
+library(ggplot2)
+library(psych)
+library(readxl)
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(reshape2)
+library(Amelia)
+library(datasets)
+library(ggplot2)
+library(readxl)
+library(tidyr)
+library(dplyr)
+library(graphics)
+library(stats)
+library(stringr)
+library(gridExtra)
+library(knitr)
+library(summarytools)
+library(stats)
+library(psych)
+library(pander)
+library(car)
+library(lmtest)
+library(lme4)
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(psych)
+library(car)
+library(nlme)
+library(lme4)
+library(readr)
+library(lmtest)
+library(sjPlot)
+library(multcomp)
+library(kableExtra)
+
+```
+
+
+## INTRODUCCIÓN
+
+Tradicionalmente la acuicultura vieen trabajando con modelos de crecimiento que solo incorporan una variable que es mas o menos conocida y que por calentamiento goblar viene en aumento en los ultimos años, pero siempre hubo una variable que hizo ruido pero que no estaba siendo incluida en el modelo de crecimiento, esta variable es el oxigeno disuelto, el cual afecta importantemente los porcesos productivos de engorda de salmones castigando los crecimientos si es que este parametro se mantenia en bajos rangos incluso generando mortalidades asociadas cuando es muy baja su concentracion.
+a continuacion trataremos de confirmar la estrecah relacion que existe entre el sgr y el o2.
+
+
+## Exploracion de datos ambientales y crecimiento en centro de cultivo de la XI region, sector Huaitecas.
+
+```{r ,echo=FALSE, out.width = '70%', fig.align='center'}
+rt <- read_excel("/cloud/project/RT.xlsx")
+summary(rt)
+
+```
+
+```{r}
+rt$sem <- as.factor(rt$sem)
+summary (rt)
+```
+
+
+
+
+#Limpieza de datos. Permite comprobar si hay perdida de datos en el marco de datos.#
+
+```{r , echo=FALSE, out.width = '70%', fig.align='center' }
+missmap(rt ,col=c('white','black'),y.at=1,y.labels='',legend=TRUE)
+```
+
+se puede apreciar que no hay falta de datos
+
+
+
+
+
+
+## Graficas incluidas##
+Para data revisada se realiza y se busca la mejor correlacion entre las variables
+
+
+```{r , echo=FALSE, out.width = '60%', fig.align='center'}
+pairs.panels(rt[,2:4], method = "pearson", hist.col = "magenta",  density = FALSE, font=1)
+#corPlot(rt ,cex = 0.5, main = "Matriz de correlación")
+```
+
+al obtener una correlacion mas baja mediante Pearson intentaremos mediante Spearman
+
+```{r}
+P_cor <-cor.test(x=rt$sgr , y=rt$o2 , method = "pearson", conf.level = 0.95)
+pander::pander(P_cor, caption = "Prueba de hipótesis para r entre Consumo bajo 20% de centros con mayores consumos y FCRc.")
+```
+
+
+```{r ,echo=FALSE, out.width = '70%', fig.align='center'}
+# correlation (rt$sgr, rt$o2, method = 'spearman')
+# pander::pander(corr, caption = "Prueba de hipótesis para r entre Consumo bajo 20% de centros con mayores consumos y FCRc.")
+```
+
+
+
+Buscamos relacion grafica
+
+```{r, RT1, echo=TRUE}
+
+ggplot(rt, aes(x=sgr, y=o2)) + 
+  geom_point() + theme_light()
+
+ggplot(rt, aes(x=sem, y=o2)) + 
+  geom_point() + theme_light()
+
+ggplot(rt, aes(x=sgr, y=temp)) + 
+  geom_point() + theme_light()
+
+```
+
+Aun no puede darse una respuesta clara de cual podria ser la mejor correlacion
+
+
+
+##Muestre el efecto de las variables independientes con respecto a la variable dependiente.
+
+```{r ,echo=FALSE, out.width = '70%', fig.align='center'}
+rt %>% 
+ dplyr::select(c(sgr,o2,temp)) %>%
+  melt(id.vars = "sgr" ) %>%
+  ggplot(aes(x = value, y = sgr, colour = variable)) +
+  geom_point(alpha = 0.7) +
+  stat_smooth(aes(colour = " ")) +
+  facet_wrap(~variable, scales = "free", ncol = 2) +
+  labs(x = "Variable Value", y = "sgr") +
+  theme_minimal()
+```
+
+La variable Sgr por lo que se puede ver es que depende claramente de O2 y temperatura .
+
+
+
+##obtendremos las estimaciones de los parametros estadisticos##
+
+
+
+```{r, echo=FALSE, out.width = '70%', fig.align='center'}
+mod1 <- lm(sgr ~ o2, data=rt)
+mod1
+```
+
+
+En la salida anterior se observan los valores estimados de  ??0 y  ??1
+pero no aparece la estimacion de  ??
+Para obtener una tabla de resumen con detalles del modelo ajustado,
+se usa la funcion generica summary
+
+```{r, echo=FALSE, out.width = '70%', fig.align='center'}
+summary(mod1)
+
+```
+
+
+Para incluir la recta de regresion que representa el modelo ajustado anterior...
+
+```{r, echo=FALSE, out.width = '70%', fig.align='center'}
+ggplot(rt, aes(x=sgr, y=o2)) + 
+  geom_point() +
+  geom_smooth(method='lm', formula=y~x, se=FALSE, col='dodgerblue1') +
+  theme_light()
+
+ggplot(rt, aes(x=sem, y=o2)) + 
+  geom_point() +
+  geom_smooth(method='lm', formula=y~x, se=FALSE, col='dodgerblue1') +
+  theme_light()
+
+ggplot(rt, aes(x=sem, y=temp)) + 
+  geom_point() +
+  geom_smooth(method='lm', formula=y~x, se=FALSE, col='dodgerblue1') +
+  theme_light()
+```
+
+la regresion lineal no se ajusta de buena manera a la nube  de datos
+
+utilizaremos regresion multiple
+
+```{r, echo=FALSE, out.width = '70%', fig.align='center'}
+library(scatterplot3d)
+attach(rt)
+scatterplot3d(x=temp, y=o2, z=sgr, pch=16, cex.lab=1,
+              highlight.3d=TRUE, type="h", xlab='Temp (C?)',
+              ylab='O2 (mg/l)', zlab='SGR')
+
+```
+
+a medida que aumenta la temperatura, aumenta el SGR y en condiciones de mayor o2
+
+```{r ,echo=FALSE, out.width = '70%', fig.align='center'}
+library(plotly)
+plot_ly(x=temp, y=o2, z=sgr, type="scatter3d", color=sgr) %>% 
+  layout(scene = list(xaxis = list(title = 'Temp (C?)'),
+                      yaxis = list(title = 'o2 (mg/l)'),
+                      zaxis = list(title = 'SGR')))
+
+```
+
+
+la grafica anterior confirma los aprecia anteriormente, el color mas claro muestra los puntos mas optimos.
+
+
+
+## MOdelo 1
+
+#basandonos en el modelo 3d, la expresion que se ajusta es:
+
+```{r, echo=FALSE, out.width = '70%', fig.align='center'}
+mod <- lm(sgr ~ o2 + temp, data=rt)
+plot(mod)
+summary(mod)
+
+
+```
+
+
+Para incluir el plano de regresion que representa el modelo ajustado anterior 
+
+ Se crea el grafico 3d y se guarda en un objeto, por ejemplo mi_3d
+ 
+```{r ,echo=FALSE, out.width = '70%', fig.align='center'}
+mi_3d <- scatterplot3d(x=temp, y=o2, z=sgr, pch=16, cex.lab=1,
+                       highlight.3d=TRUE, type="h", xlab='Temp (C?)',
+                       ylab='O2 (mg/l)', zlab='SGR')
+
+mi_3d$plane3d(mod, lty.box = "solid", col='mediumblue')
+```
+
+
+
+podemos ver que en la grafica 3D la regresion se ajusta de mejor manera los a ambas variables una dependeiente de la otra.
+```{r ,echo=FALSE, out.width = '70%', fig.align='center'}
+library(ggplot2)
+ggplot(rt, aes(x=sgr, y=o2))+
+    geom_point() +
+    geom_line(aes(y=sgr), color="red", linetype="dashed") +
+    geom_line(aes(y=o2), color="red", linetype="dashed") +
+    geom_smooth(method=lm, formula=y~x, se=TRUE, level=0.95, col='blue', fill='pink2') +
+    theme_light()
+```
+haca ya llevamos a un plano la regresion mostrando la mejor concordancia entre el O2 y el Sgr.
+
+
+
+
+##¿Que hipotesis contrasta la prueba de Kruskal-Wallis?
+
+Ho: la variable respuesta es la misma en todas las variables valoradas
+
+Ha: la variable respuesta es mayor en ciertos niveles.
+
+
+
+
+```{r}
+kruskal.test(rt$sgr, rt$temp)
+```
+Indica cual es el estadistico de contraste, los grados de libertad, el p-valor correspondiente y cual seria el valor critico que definiria las regiones de aceptacion y rechazo con un nivel de significacion alfa = 0.1.
+
+
+```{r}
+qchisq(0.07, 2-1, lower.tail = F)#Valor teorico
+```
+#chi cuadrado es 436 >3.283  se acepta la Ho.
+
+
+```{r}
+kruskal.test(log(rt$sgr), rt$temp) #log para reducir escala de dispersiÃ³n
+```
+Los resultados son exactamente los mismos. No se producen variaciones porque el test de Kruskal-Wallis trabaja sobre rangos, es decir, sobre ordenaciones de los valores de la variable en cada uno de los grupos. Aunque realicemos una transformacion logaritmica, el orden entre los valores de la variable se mantiene y por lo tanto la transformacion no afecta a los resultados del test.
+
+### Nuevos test 
+se realizan nuevos test para analizar si poseemos una autocorrelacion en los residuos de la regresion.
+
+
+```{r ,echo=FALSE, out.width = '70%', fig.align='center'}
+dwtest(lm(sgr ~ o2 + temp, data=rt), data = rt, alternative = c("two.sided"), iterations = 15)
+bptest(lm(sgr ~ o2 + temp, data=rt), data = rt)
+shapiro.test(residuals(mod))
+```
+
+como vemos todos los P-value son bajos a 1 por lo cual se rechaza la hipotesis de autocorrelacion del primer modelo por lo cual generaremos nuevas iteraciones.
+por ende se concluye que lo anterior no se distribuye de manera normal.
+a lo anterior recurrieremos a modelos multivariables
+
+
+
+## Modelo 2
+Provaremos una nueva variente del modelo (mod)
+
+SGR = o2 ~ temp + (1| semana)
+
+```{r}
+mod2<- lmer(sgr ~ o2 + (1 | temp), data = rt)
+summary(mod2)
+
+```
+
+```{r}
+tab_model(mod2, show.se = TRUE, show.aic=TRUE)
+```
+
+
+
+### Conclusiones
+
+Se aprecia que hay una realcion estrecha ademas de la temperatura en el crecimiento de los peces gatillado por las fluctuaciones del O2
+
+
+
+
+## variable no se distibuye normal
+
+MLM
+
+
+
+
+
+
+
+
+## Modelo 3
+
+Cambiaremos el orden las las variables para cotejar el mejor ajuste.
+
+```{r}
+mod3<- lmer(sgr ~ temp + (1 | o2), data = rt)
+summary(mod3)
+tab_model(mod3, show.se = TRUE, show.aic=TRUE)
+```
+
+
+
+
+

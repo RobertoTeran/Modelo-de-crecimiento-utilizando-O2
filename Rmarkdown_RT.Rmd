@@ -3,15 +3,15 @@ title: "Tarea final Diplomado"
 author: "Roberto Teran"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
-  slidy_presentation: default
-  html_document:
-    df_print: paged
   beamer_presentation:
     theme: Warsaw
     colortheme: lily
     fonttheme: professionalfonts
     includes:
       in_header: mystyle.tex
+  slidy_presentation: default
+  html_document:
+    df_print: paged
   urlcolor: blue
   ioslides_presentation: default
 subtitle: Diplomado en Análisis de datos con R para la Acuicultura.
@@ -30,6 +30,36 @@ library(ggplot2)
 library(dplyr)
 library(reshape2)
 library(Amelia)
+library(datasets)
+library(ggplot2)
+library(readxl)
+library(tidyr)
+library(dplyr)
+library(graphics)
+library(stats)
+library(stringr)
+library(gridExtra)
+library(knitr)
+library(summarytools)
+library(stats)
+library(psych)
+library(pander)
+library(car)
+library(lmtest)
+library(lme4)
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(psych)
+library(car)
+library(nlme)
+library(lme4)
+library(readr)
+library(lmtest)
+library(sjPlot)
+library(multcomp)
+library(kableExtra)
+
 ```
 
 
@@ -47,9 +77,17 @@ summary(rt)
 
 ```
 
-##Limpieza de datos. Permite comprobar si hay perdida de datos en el marco de datos.
+```{r}
+rt$sem <- as.factor(rt$sem)
+summary (rt)
+```
 
-```{r }
+
+
+
+#Limpieza de datos. Permite comprobar si hay perdida de datos en el marco de datos.#
+
+```{r , echo=FALSE, out.width = '70%', fig.align='center' }
 missmap(rt ,col=c('white','black'),y.at=1,y.labels='',legend=TRUE)
 ```
 
@@ -64,19 +102,25 @@ se puede apreciar que no hay falta de datos
 Para data revisada se realiza y se busca la mejor correlacion entre las variables
 
 
-```{r }
+```{r , echo=FALSE, out.width = '60%', fig.align='center'}
 pairs.panels(rt[,2:4], method = "pearson", hist.col = "magenta",  density = FALSE, font=1)
-corPlot(rt , cex = 0.5, main = "Matriz de correlación")
+#corPlot(rt ,cex = 0.5, main = "Matriz de correlación")
 ```
 
 al obtener una correlacion mas baja mediante Pearson intentaremos mediante Spearman
 
+```{r}
+P_cor <-cor.test(x=rt$sgr , y=rt$o2 , method = "pearson", conf.level = 0.95)
+pander::pander(P_cor, caption = "Prueba de hipótesis para r entre Consumo bajo 20% de centros con mayores consumos y FCRc.")
+```
 
 
 ```{r ,echo=FALSE, out.width = '70%', fig.align='center'}
-correlation <- cor(rt$sgr, rt$o2, method = 'spearman')
+# correlation (rt$sgr, rt$o2, method = 'spearman')
+# pander::pander(corr, caption = "Prueba de hipótesis para r entre Consumo bajo 20% de centros con mayores consumos y FCRc.")
 ```
-obtuvimos una correlacion de 0.649
+
+
 
 Buscamos relacion grafica
 
@@ -100,8 +144,8 @@ Aun no puede darse una respuesta clara de cual podria ser la mejor correlacion
 ##Muestre el efecto de las variables independientes con respecto a la variable dependiente.
 
 ```{r ,echo=FALSE, out.width = '70%', fig.align='center'}
-rt %>%
-  select(c(sgr,o2,temp)) %>%
+rt %>% 
+ dplyr::select(c(sgr,o2,temp)) %>%
   melt(id.vars = "sgr" ) %>%
   ggplot(aes(x = value, y = sgr, colour = variable)) +
   geom_point(alpha = 0.7) +
@@ -189,6 +233,7 @@ la grafica anterior confirma los aprecia anteriormente, el color mas claro muest
 
 ```{r, echo=FALSE, out.width = '70%', fig.align='center'}
 mod <- lm(sgr ~ o2 + temp, data=rt)
+plot(mod)
 summary(mod)
 
 
@@ -219,16 +264,92 @@ ggplot(rt, aes(x=sgr, y=o2))+
     geom_smooth(method=lm, formula=y~x, se=TRUE, level=0.95, col='blue', fill='pink2') +
     theme_light()
 ```
-haca ya llevamos a un plano la regresion mostrando la mejosr concordancia entre el O2 y el Sgr.
-
-
-## Prueba Paramtrica
-
-Ho: la variable respuesta es la misma en todas las poblaciones valoradas
-
-Ha: la variable respuesta es mayor en alguna de las poblaciones
-
-Cuando no se cumplen las hipotesis exigidas por el modelo ANOVA, es posible utilizar la prueba no paramÃ©trica Kruskal-Wallis: Â¿hay diferencias significativas entre las poblaciones?
+haca ya llevamos a un plano la regresion mostrando la mejor concordancia entre el O2 y el Sgr.
 
 
 
+
+##¿Que hipotesis contrasta la prueba de Kruskal-Wallis?
+
+Ho: la variable respuesta es la misma en todas las variables valoradas
+
+Ha: la variable respuesta es mayor en ciertos niveles.
+
+
+
+
+```{r}
+kruskal.test(rt$sgr, rt$temp)
+```
+Indica cual es el estadistico de contraste, los grados de libertad, el p-valor correspondiente y cual seria el valor critico que definiria las regiones de aceptacion y rechazo con un nivel de significacion alfa = 0.1.
+
+
+```{r}
+qchisq(0.07, 2-1, lower.tail = F)#Valor teorico
+```
+#chi cuadrado es 436 >3.283  se acepta la Ho.
+
+
+```{r}
+kruskal.test(log(rt$sgr), rt$temp) #log para reducir escala de dispersiÃ³n
+```
+Los resultados son exactamente los mismos. No se producen variaciones porque el test de Kruskal-Wallis trabaja sobre rangos, es decir, sobre ordenaciones de los valores de la variable en cada uno de los grupos. Aunque realicemos una transformacion logaritmica, el orden entre los valores de la variable se mantiene y por lo tanto la transformacion no afecta a los resultados del test.
+
+### Nuevos test 
+se realizan nuevos test para analizar si poseemos una autocorrelacion en los residuos de la regresion.
+
+
+```{r ,echo=FALSE, out.width = '70%', fig.align='center'}
+dwtest(lm(sgr ~ o2 + temp, data=rt), data = rt, alternative = c("two.sided"), iterations = 15)
+bptest(lm(sgr ~ o2 + temp, data=rt), data = rt)
+shapiro.test(residuals(mod))
+```
+
+como vemos todos los P-value son bajos a 1 por lo cual se rechaza la hipotesis de autocorrelacion del primer modelo por lo cual generaremos nuevas iteraciones.
+por ende se concluye que lo anterior no se distribuye de manera normal.
+a lo anterior recurrieremos a modelos multivariables
+
+
+
+## Modelo 2
+Provaremos una nueva variente del modelo (mod)
+
+SGR = o2 ~ temp + (1| semana)
+
+```{r}
+mod2<- lmer(sgr ~ o2 + (1 | temp), data = rt)
+summary(mod2)
+
+```
+
+```{r}
+tab_model(mod2, show.se = TRUE, show.aic=TRUE)
+```
+
+
+
+### Conclusiones
+
+Se aprecia que hay una realcion estrecha ademas de la temperatura en el crecimiento de los peces gatillado por las fluctuaciones del O2
+
+
+
+
+## variable no se distibuye normal
+
+MLM
+
+
+
+
+
+
+
+
+## otro 
+
+```{r}
+mod3<- lmer(sgr ~ temp + (1 | o2), data = rt)
+summary(mod3)
+tab_model(mod3, show.se = TRUE, show.aic=TRUE)
+```

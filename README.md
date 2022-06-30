@@ -1,4 +1,4 @@
-## Modelo-de-crecimiento-utilizando-O2.
+## Taabajo final
 Agregar la variable O2 a modelo de crecimiento ya creado para salmones Blumar.
 
 ## Autor.
