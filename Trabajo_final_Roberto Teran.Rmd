@@ -3,18 +3,18 @@ title: "Tarea final Diplomado"
 author: "Roberto Teran"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
-  html_document:
-    df_print: paged
-  slidy_presentation: default
-  ioslides_presentation: default
-  urlcolor: blue
-  pdf_document: default
   beamer_presentation:
     theme: Warsaw
     colortheme: lily
     fonttheme: professionalfonts
     includes:
       in_header: mystyle.tex
+  slidy_presentation: default
+  ioslides_presentation: default
+  urlcolor: blue
+  pdf_document: default
+  html_document:
+    df_print: paged
 subtitle: Diplomado en Análisis de datos con R para la Acuicultura.
 institute: Pontificia Universidad Católica de Valparaíso
 ---
@@ -337,17 +337,6 @@ Se aprecia que hay una realcion estrecha ademas de la temperatura en el crecimie
 
 
 
-## variable no se distibuye normal
-
-MLM
-
-
-
-
-
-
-
-
 ## Modelo 3
 
 Cambiaremos el orden las las variables para cotejar el mejor ajuste.
@@ -358,6 +347,12 @@ summary(mod3)
 tab_model(mod3, show.se = TRUE, show.aic=TRUE)
 ```
 
+
+
+### Conclusiones
+
+El modelo al plantearse de que la temperatura tiene directa realcion con el SGr impulsa a asumir que el O2 tambien se ve influenciado por lo anterior.
+A pesar de tener conclusiones parciales de la realcion que existe entre O2, sgr y temperatura el proyecto seguira avanzando para buscar conclusiones mas solidas y estrechas entre las variables.
 
 
 

@@ -228,6 +228,7 @@ la grafica anterior confirma los aprecia anteriormente, el color mas claro muest
 
 
 
+## MOdelo 1
 
 #basandonos en el modelo 3d, la expresion que se ajusta es:
 
