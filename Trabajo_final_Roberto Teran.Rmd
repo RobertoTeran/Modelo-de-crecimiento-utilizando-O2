@@ -3,13 +3,13 @@ title: "Tarea final Diplomado"
 author: "Roberto Teran"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
+  slidy_presentation: default
   beamer_presentation:
     theme: Warsaw
     colortheme: lily
     fonttheme: professionalfonts
     includes:
       in_header: mystyle.tex
-  slidy_presentation: default
   ioslides_presentation: default
   urlcolor: blue
   pdf_document: default
